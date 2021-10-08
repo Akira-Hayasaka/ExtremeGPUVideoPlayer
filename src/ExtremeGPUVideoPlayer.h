@@ -227,7 +227,7 @@ public:
 
 	int getCurrentFrame()
 	{
-
+		return extreme_gpu_video.getFrameAt();
 	}
 
 	int getTotalNumFrames()
