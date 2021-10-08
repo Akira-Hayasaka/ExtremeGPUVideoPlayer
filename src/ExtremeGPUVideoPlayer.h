@@ -13,8 +13,7 @@ public:
 		movie_finish_time(ofGetElapsedTimef()),
 		speed(1.0), 
 		b_loop(true),
-		b_use_sound(false),
-		last_sound_position(0.0)
+		b_use_sound(false)
 	{}
 
 	~ExtremeGPUVideoPlayer() {}
@@ -136,14 +135,39 @@ public:
 
 	void setPaused(const bool _b_paused)
 	{
+		if (_b_paused)
+		{
+			if (state == State::playing)
+			{
+				state = State::paused;
+				pausing_begin_time = ofGetElapsedTimef();
 
+				if (b_use_sound)
+					sound.setPaused(true);
+			}
+		}
+		else
+		{
+			if (state == State::paused)
+			{
+				state = State::playing;
+
+				auto pausing_dur = ofGetElapsedTimef() - pausing_begin_time;
+				movie_finish_time += pausing_dur;
+
+				if (b_use_sound)
+					sound.setPaused(false);
+			}
+		}
 	}
 
 	bool isPaused()
 	{
-
+		if (state == State::paused)
+			return true;
+		else
+			return false;
 	}
-
 
 	float getWidth()
 	{
@@ -308,7 +332,7 @@ protected:
 
 	enum struct State { init, loaded, stop, paused, playing, scrubbing }; State state;
 	float speed;
-	float movie_finish_time;
+	float movie_finish_time, pausing_begin_time;
 	int last_frm_num;
 	bool b_loop;
 
@@ -317,5 +341,4 @@ protected:
 
 	ofSoundPlayer sound;
 	bool b_use_sound;
-	float last_sound_position;
 };

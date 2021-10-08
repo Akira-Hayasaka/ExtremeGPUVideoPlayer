@@ -22,6 +22,9 @@ void ofApp::keyPressed(int key)
 		player->stop();
 	if (key == 'p')
 		player->play();
+
+	if (key == ' ')
+		player->setPaused(!player->isPaused());
 }
 void ofApp::keyReleased(int key) {}
 void ofApp::mouseMoved(int x, int y) {}
