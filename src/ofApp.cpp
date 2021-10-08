@@ -16,7 +16,13 @@ void ofApp::draw()
 {
 	player->draw(0, 0);
 }
-void ofApp::keyPressed(int key) {}
+void ofApp::keyPressed(int key) 
+{
+	if (key == 's')
+		player->stop();
+	if (key == 'p')
+		player->play();
+}
 void ofApp::keyReleased(int key) {}
 void ofApp::mouseMoved(int x, int y) {}
 void ofApp::mouseDragged(int x, int y, int button) {}

@@ -12,7 +12,9 @@ public:
 		last_frm_num(0), 
 		movie_finish_time(ofGetElapsedTimef()),
 		speed(1.0), 
-		b_use_sound(false), b_loop(false)
+		b_loop(true),
+		b_use_sound(false),
+		last_sound_position(0.0)
 	{}
 
 	~ExtremeGPUVideoPlayer() {}
@@ -77,14 +79,14 @@ public:
 			if (!b_loop)
 			{
 				if (b_mov_done)
-					state = State::stop;
+					stop();
 				else
 					update_mov();
 			}
 			else
 			{
 				if (b_mov_done)
-					reset();
+					resume();
 
 				update_mov();
 			}
@@ -116,19 +118,32 @@ public:
 		if (state != State::init)
 		{
 			state = State::playing;
-			sound.play();
+			resume();
 		}
 	}
 
 	void stop()
 	{
+		if (state != State::init)
+		{
+			state = State::stop;
+			reset();
 
+			if (b_use_sound)
+				sound.stop();
+		}
 	}
 
 	void setPaused(const bool _b_paused)
 	{
 
 	}
+
+	bool isPaused()
+	{
+
+	}
+
 
 	float getWidth()
 	{
@@ -138,11 +153,6 @@ public:
 	float getHeight()
 	{
 		return extreme_gpu_video.getHeight();
-	}
-
-	bool isPaused()
-	{
-
 	}
 
 	bool isLoaded()
@@ -224,18 +234,23 @@ public:
 
 protected:
 
-	void reset()
+	void resume()
 	{
-		last_frm_num = 0;
-		movie_finish_time = ofGetElapsedTimef();
-		extreme_gpu_video.setFrame(0);
-		extreme_gpu_video.update();
+		reset();
 
 		if (b_use_sound)
 		{
 			sound.setPosition(0.0);
 			sound.play();
 		}
+	}
+
+	void reset()
+	{
+		last_frm_num = 0;
+		movie_finish_time = ofGetElapsedTimef();
+		extreme_gpu_video.setFrame(0);
+		extreme_gpu_video.update();
 	}
 
 	int get_current_frame_number_based_on_speed()
@@ -291,7 +306,7 @@ protected:
 		return dur;
 	}
 
-	enum struct State { init, loaded, stop, playing, scrubbing }; State state;
+	enum struct State { init, loaded, stop, paused, playing, scrubbing }; State state;
 	float speed;
 	float movie_finish_time;
 	int last_frm_num;
@@ -302,4 +317,5 @@ protected:
 
 	ofSoundPlayer sound;
 	bool b_use_sound;
+	float last_sound_position;
 };
