@@ -10,6 +10,7 @@ public:
 	ExtremeGPUVideoPlayer() :
 		state(State::init),
 		last_frm_num(0), 
+		cur_time(ofGetElapsedTimef()),
 		movie_finish_time(ofGetElapsedTimef()),
 		speed(1.0), 
 		b_loop(true),
@@ -20,12 +21,13 @@ public:
 	~ExtremeGPUVideoPlayer() {}
 
 	void load(
-		const std::filesystem::path _movie_path, 
+		const std::filesystem::path _movie_path,
 		const std::filesystem::path _audio_path = "")
 	{
 		extreme_gpu_video.load(
-			_movie_path.string(), 
+			_movie_path.string(),
 			ofxExtremeGpuVideo::GPU_VIDEO_STREAMING_FROM_STORAGE);
+		state = State::loaded;
 
 		fbo.allocate(getWidth(), getHeight());
 		fbo.begin();
@@ -41,8 +43,6 @@ public:
 			sound.setMultiPlay(false);
 			sound.setLoop(false);
 		}
-
-		state = State::loaded;
 	}
 
 	void close()
@@ -75,6 +75,7 @@ public:
 			fbo.end();
 		};
 
+		cur_time = ofGetElapsedTimef();
 		auto b_mov_done = is_mov_done();
 
 		if (state == State::playing)
@@ -105,7 +106,7 @@ public:
 	}
 
 	void draw(
-		const float _x, const float _y, 
+		const float _x, const float _y,
 		const float _w, const float _h)
 	{
 		if (state != State::init)
@@ -147,7 +148,7 @@ public:
 			if (state == State::playing)
 			{
 				state = State::paused;
-				pausing_begin_time = ofGetElapsedTimef();
+				pausing_begin_time = cur_time;
 
 				if (b_use_sound)
 					sound.setPaused(true);
@@ -159,7 +160,7 @@ public:
 			{
 				state = State::playing;
 
-				auto pausing_dur = ofGetElapsedTimef() - pausing_begin_time;
+				auto pausing_dur = cur_time - pausing_begin_time;
 				movie_finish_time += pausing_dur;
 
 				if (b_use_sound)
@@ -265,7 +266,15 @@ public:
 
 	void setFrame(const int _frame)
 	{
+		// - pause mov
+		// - set frame
+		// - resume mov from that frame
 
+		if (state != State::init && state != State::scrubbing)
+		{
+			pausing_begin_time = cur_time;
+			state = State::scrubbing;
+		}
 	}
 
 	float getSpeed()
@@ -310,7 +319,7 @@ protected:
 	void reset()
 	{
 		last_frm_num = 0;
-		movie_finish_time = ofGetElapsedTimef();
+		movie_finish_time = cur_time;
 		extreme_gpu_video.setFrame(0);
 		extreme_gpu_video.update();
 	}
@@ -320,7 +329,7 @@ protected:
 		auto& vid = extreme_gpu_video;
 		auto total_frame_on_true_fps = vid.getFrameCount();
 		auto dur = get_movie_dur_by_speed();
-		auto elapsed = ofGetElapsedTimef() - movie_finish_time;
+		auto elapsed = cur_time - movie_finish_time;
 		auto cur_time = ofClamp(fmod(elapsed, dur), 0.0, dur);
 		auto the_fps = vid.getFramePerSecond() * speed;
 		int frame = ofClamp(cur_time * the_fps, 0, total_frame_on_true_fps);
@@ -344,7 +353,7 @@ protected:
 			last_frm_num = 0;
 			vid.setFrame(0);
 			vid.update();
-			movie_finish_time = ofGetElapsedTimef();
+			movie_finish_time = cur_time;
 			ofNotifyEvent(mov_finish_event);
 			return true;
 		}
@@ -354,7 +363,7 @@ protected:
 			last_frm_num = 0;
 			vid.setFrame(0);
 			vid.update();
-			movie_finish_time = ofGetElapsedTimef();
+			movie_finish_time = cur_time;
 			ofNotifyEvent(mov_finish_event);
 			return true;
 		}
@@ -373,10 +382,10 @@ protected:
 		return dur;
 	}
 
-	enum struct State { init, loaded, stop, paused, playing, scrubbing, done }; 
+	enum struct State { init, loaded, stop, paused, playing, scrubbing, done };
 	State state;
 	float speed;
-	float movie_finish_time, pausing_begin_time;
+	float cur_time, movie_finish_time, pausing_begin_time;
 	int last_frm_num;
 	bool b_loop;
 	bool b_frame_new;
