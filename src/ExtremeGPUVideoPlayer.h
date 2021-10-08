@@ -78,7 +78,10 @@ public:
 			if (!b_loop)
 			{
 				if (b_mov_done)
+				{
 					stop();
+					state = State::done;
+				}
 				else
 					update_mov();
 			}
@@ -181,7 +184,10 @@ public:
 
 	bool isLoaded()
 	{
-
+		if (state != State::init)
+			return true;
+		else
+			return false;
 	}
 
 	bool isPlaying()
@@ -206,7 +212,10 @@ public:
 
 	bool getIsMovieDone()
 	{
-
+		if (state == State::done)
+			return true;
+		else
+			return false;
 	}
 
 	int getCurrentFrame()
@@ -330,7 +339,7 @@ protected:
 		return dur;
 	}
 
-	enum struct State { init, loaded, stop, paused, playing, scrubbing }; State state;
+	enum struct State { init, loaded, stop, paused, playing, scrubbing, done }; State state;
 	float speed;
 	float movie_finish_time, pausing_begin_time;
 	int last_frm_num;
