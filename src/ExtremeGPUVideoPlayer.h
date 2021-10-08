@@ -373,7 +373,8 @@ protected:
 		return dur;
 	}
 
-	enum struct State { init, loaded, stop, paused, playing, scrubbing, done }; State state;
+	enum struct State { init, loaded, stop, paused, playing, scrubbing, done }; 
+	State state;
 	float speed;
 	float movie_finish_time, pausing_begin_time;
 	int last_frm_num;
