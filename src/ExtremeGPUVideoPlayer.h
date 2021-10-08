@@ -285,11 +285,15 @@ public:
 
 	void setPosition(const float _pct)
 	{
-
+		auto frm = ofMap(_pct, 0.0, 1.0, 0, extreme_gpu_video.getFrameCount(), true);
+		setFrame(frm);
 	}
 
 	void setFrame(const int _frame)
 	{
+		if (state == State::paused)
+			return;
+
 		if (state != State::init)
 		{
 			auto& vid = extreme_gpu_video;
