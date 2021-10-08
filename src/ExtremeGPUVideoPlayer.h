@@ -132,15 +132,19 @@ public:
 				auto mov_dur = vid.getFrameCount() / (vid.getFramePerSecond() * speed);
 
 				auto scrub_timeat_mov = ofMap(
-					vid.getFrameAt(), 0, vid.getFrameCount(), 
+					vid.getFrameAt(), 0, vid.getFrameCount(),
 					0.0, mov_dur, true);
 				auto diff_time = (scrub_begin_timeat_mov - scrub_timeat_mov);
 				auto pausing_dur = cur_time - pausing_begin_time;
 
 				movie_finish_time += pausing_dur + diff_time;
 
-				//if (b_use_sound)
-				//	sound.setPaused(false);
+				if (b_use_sound)
+				{
+					auto scrub_pct = ofMap(vid.getFrameAt(), 0, vid.getFrameCount(), 0.0, 1.0, true);
+					sound.setPaused(false);
+					sound.setPosition(scrub_pct);
+				}
 			}
 			else
 				resume();
