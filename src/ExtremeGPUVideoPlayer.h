@@ -270,7 +270,8 @@ public:
 
 	void setVolume(const float _volume)
 	{
-
+		if (b_use_sound)
+			sound.setVolume(_volume);
 	}
 
 	ofEvent<void> mov_finish_event;
