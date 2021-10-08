@@ -12,7 +12,7 @@ public:
 		last_frm_num(0), 
 		movie_finish_time(ofGetElapsedTimef()),
 		speed(1.0), 
-		b_use_sound(false)
+		b_use_sound(false), b_loop(false)
 	{}
 
 	~ExtremeGPUVideoPlayer() {}
@@ -36,6 +36,8 @@ public:
 		{
 			b_use_sound = true;
 			sound.load(_audio_path);
+			sound.setMultiPlay(false);
+			sound.setLoop(false);
 		}
 
 		state = State::loaded;
@@ -53,11 +55,10 @@ public:
 
 	void update()
 	{
-		is_mov_done();
-
-		if (state == State::playing)
+		auto update_mov = [&]() -> void
 		{
 			auto fnum = get_current_frame_number_based_on_speed();
+
 			extreme_gpu_video.setFrame(fnum);
 			extreme_gpu_video.update();
 
@@ -67,6 +68,26 @@ public:
 			extreme_gpu_video.getPlaceHolderTexture().draw(0, 0);
 			extreme_gpu_video.end();
 			fbo.end();
+		};
+
+		auto b_mov_done = is_mov_done();
+
+		if (state == State::playing)
+		{
+			if (!b_loop)
+			{
+				if (b_mov_done)
+					state = State::stop;
+				else
+					update_mov();
+			}
+			else
+			{
+				if (b_mov_done)
+					reset();
+
+				update_mov();
+			}
 		}
 	}
 
@@ -191,7 +212,7 @@ public:
 
 	void setLoopState(const bool _b_loop)
 	{
-
+		b_loop = _b_loop;
 	}
 
 	void setVolume(const float _volume)
@@ -202,6 +223,20 @@ public:
 	ofEvent<void> mov_finish_event;
 
 protected:
+
+	void reset()
+	{
+		last_frm_num = 0;
+		movie_finish_time = ofGetElapsedTimef();
+		extreme_gpu_video.setFrame(0);
+		extreme_gpu_video.update();
+
+		if (b_use_sound)
+		{
+			sound.setPosition(0.0);
+			sound.play();
+		}
+	}
 
 	int get_current_frame_number_based_on_speed()
 	{
@@ -216,7 +251,7 @@ protected:
 		return frame;
 	}
 
-	void is_mov_done()
+	bool is_mov_done()
 	{
 		auto& vid = extreme_gpu_video;
 		int cur_frm_num = vid.getFrameAt();
@@ -229,6 +264,7 @@ protected:
 			vid.update();
 			movie_finish_time = ofGetElapsedTimef();
 			ofNotifyEvent(mov_finish_event);
+			return true;
 		}
 		else if (cur_frm_num < last_frm_num)
 		{
@@ -238,11 +274,13 @@ protected:
 			vid.update();
 			movie_finish_time = ofGetElapsedTimef();
 			ofNotifyEvent(mov_finish_event);
+			return true;
 		}
 		else
 		{
 			//ofLogNotice(__FUNCTION__) << id_str << " playing " << type_str << " movie at " << ofToString(cur_frm_num) << " and last frm is " << last_frm_num << ", elp:" << Globals::ELAPSED_TIME;
 			last_frm_num = cur_frm_num;
+			return false;
 		}
 	}
 
@@ -257,6 +295,7 @@ protected:
 	float speed;
 	float movie_finish_time;
 	int last_frm_num;
+	bool b_loop;
 
 	ofxExtremeGpuVideo extreme_gpu_video;
 	ofFbo fbo;
