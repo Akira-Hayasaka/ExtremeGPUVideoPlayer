@@ -3,9 +3,19 @@
 void ofApp::setup() 
 {
 	player = std::make_unique<ExtremeGPUVideoPlayer>();
+	player->load("visual_short.gv", "sound_short.mp3");
+	player->play();
+
+	ofSetWindowShape(player->getWidth(), player->getHeight());
 }
-void ofApp::update() {}
-void ofApp::draw() {}
+void ofApp::update() 
+{
+	player->update();
+}
+void ofApp::draw() 
+{
+	player->draw(0, 0);
+}
 void ofApp::keyPressed(int key) {}
 void ofApp::keyReleased(int key) {}
 void ofApp::mouseMoved(int x, int y) {}
