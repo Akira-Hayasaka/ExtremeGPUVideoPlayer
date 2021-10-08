@@ -178,12 +178,18 @@ public:
 
 	float getWidth()
 	{
-		return extreme_gpu_video.getWidth();
+		if (state != State::init)
+			return extreme_gpu_video.getWidth();
+		else
+			return 0.0;
 	}
 
 	float getHeight()
 	{
-		return extreme_gpu_video.getHeight();
+		if (state != State::init)
+			return extreme_gpu_video.getHeight();
+		else
+			return 0.0;
 	}
 
 	bool isLoaded()
@@ -214,7 +220,10 @@ public:
 
 	float getDuration()
 	{
-		return extreme_gpu_video.getDuration();
+		if (state != State::init)
+			return extreme_gpu_video.getDuration();
+		else
+			return 0.0;
 	}
 
 	bool getIsMovieDone()
@@ -227,17 +236,26 @@ public:
 
 	int getCurrentFrame()
 	{
-		return extreme_gpu_video.getFrameAt();
+		if (state != State::init)
+			return extreme_gpu_video.getFrameAt();
+		else
+			return 0;
 	}
 
 	int getTotalNumFrames()
 	{
-		return extreme_gpu_video.getFrameCount();
+		if (state != State::init)
+			return extreme_gpu_video.getFrameCount();
+		else
+			return 0;
 	}
 
 	float getPosition()
 	{
-
+		if (state != State::init)
+			return ofMap(extreme_gpu_video.getFrameAt(), 0, extreme_gpu_video.getFrameCount(), 0.0, 1.0, true);
+		else
+			return 0.0;
 	}
 
 	void setPosition(const float _pct)
