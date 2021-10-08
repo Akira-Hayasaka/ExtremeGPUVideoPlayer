@@ -71,10 +71,11 @@ public:
 		};
 
 		cur_time = ofGetElapsedTimef();
-		auto b_mov_done = is_mov_done();
 
 		if (state == State::playing)
 		{
+			auto b_mov_done = is_mov_done();
+
 			if (!b_loop)
 			{
 				if (b_mov_done)
@@ -110,6 +111,11 @@ public:
 		}
 	}
 
+	void debug_draw()
+	{
+
+	}
+
 	bool isFrameNew()
 	{
 		return b_frame_new;
@@ -117,12 +123,21 @@ public:
 
 	void play()
 	{
+		
 		if (state != State::init)
 		{
 			if (state == State::scrubbing)
 			{
-				//auto pausing_dur = cur_time - pausing_begin_time;
-				//movie_finish_time += pausing_dur;
+				auto& vid = extreme_gpu_video;
+				auto mov_dur = vid.getFrameCount() / (vid.getFramePerSecond() * speed);
+
+				auto scrub_timeat_mov = ofMap(
+					vid.getFrameAt(), 0, vid.getFrameCount(), 
+					0.0, mov_dur, true);
+				auto diff_time = (scrub_begin_timeat_mov - scrub_timeat_mov);
+				auto pausing_dur = cur_time - pausing_begin_time;
+
+				movie_finish_time += pausing_dur + diff_time;
 
 				//if (b_use_sound)
 				//	sound.setPaused(false);
@@ -271,37 +286,23 @@ public:
 
 	void setFrame(const int _frame)
 	{
-		// - pause mov
-		// - set frame
-		// - resume mov from that frame
-
 		if (state != State::init)
 		{
 			auto& vid = extreme_gpu_video;
-			auto mov_dur = vid.getFrameCount() / (vid.getFramePerSecond() * speed);
-
+			
 			if (state != State::scrubbing)
 			{
 				pausing_begin_time = cur_time;
-				auto cur_frm = vid.getFrameAt();
-				scrub_begin_timeat_mov = ofMap(cur_frm, 0, vid.getFrameCount(), 0.0, mov_dur, true);;
+				auto mov_dur = vid.getFrameCount() / (vid.getFramePerSecond() * speed);
+				scrub_begin_timeat_mov = ofMap(vid.getFrameAt(), 0, vid.getFrameCount(), 0.0, mov_dur, true);;
 				if (b_use_sound)
 					sound.setPaused(true);
 				state = State::scrubbing;
 			}
 
+			last_frm_num = 0;
+
 			auto fnum = ofClamp(_frame, 0, vid.getFrameCount());
-			auto scrub_timeat_mov = ofMap(fnum, 0, vid.getFrameCount(), 0.0, mov_dur, true);
-			auto diff_time = scrub_begin_timeat_mov - scrub_timeat_mov;
-
-			auto pausing_dur = cur_time - pausing_begin_time;
-
-			movie_finish_time += pausing_dur + diff_time * -1.0;
-
-			ofLog() << "scrub_begin_timeat_mov: " << scrub_begin_timeat_mov;
-			ofLog() << "scrub_timeat_mov: " << scrub_timeat_mov;
-			ofLog() << "diff_time: " << diff_time;
-
 			vid.setFrame(fnum);
 			vid.update();
 
