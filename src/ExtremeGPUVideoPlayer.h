@@ -232,7 +232,7 @@ public:
 
 	int getTotalNumFrames()
 	{
-
+		return extreme_gpu_video.getFrameCount();
 	}
 
 	float getPosition()
@@ -252,12 +252,15 @@ public:
 
 	float getSpeed()
 	{
-
+		return speed;
 	}
 
 	void setSpeed(const float _speed)
 	{
+		speed = _speed;
 
+		if (b_use_sound)
+			sound.setSpeed(speed);
 	}
 
 	void setLoopState(const bool _b_loop)
