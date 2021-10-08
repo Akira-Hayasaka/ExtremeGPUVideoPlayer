@@ -214,7 +214,7 @@ public:
 
 	float getDuration()
 	{
-
+		return extreme_gpu_video.getDuration();
 	}
 
 	bool getIsMovieDone()
