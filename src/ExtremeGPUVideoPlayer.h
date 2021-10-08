@@ -67,12 +67,7 @@ public:
 			extreme_gpu_video.setFrame(fnum);
 			extreme_gpu_video.update();
 
-			fbo.begin();
-			ofClear(0);
-			extreme_gpu_video.begin();
-			extreme_gpu_video.getPlaceHolderTexture().draw(0, 0);
-			extreme_gpu_video.end();
-			fbo.end();
+			feed_fbo();
 		};
 
 		cur_time = ofGetElapsedTimef();
@@ -124,8 +119,18 @@ public:
 	{
 		if (state != State::init)
 		{
+			if (state == State::scrubbing)
+			{
+				//auto pausing_dur = cur_time - pausing_begin_time;
+				//movie_finish_time += pausing_dur;
+
+				//if (b_use_sound)
+				//	sound.setPaused(false);
+			}
+			else
+				resume();
+
 			state = State::playing;
-			resume();
 		}
 	}
 
@@ -270,10 +275,37 @@ public:
 		// - set frame
 		// - resume mov from that frame
 
-		if (state != State::init && state != State::scrubbing)
+		if (state != State::init)
 		{
-			pausing_begin_time = cur_time;
-			state = State::scrubbing;
+			auto& vid = extreme_gpu_video;
+			auto mov_dur = vid.getFrameCount() / (vid.getFramePerSecond() * speed);
+
+			if (state != State::scrubbing)
+			{
+				pausing_begin_time = cur_time;
+				auto cur_frm = vid.getFrameAt();
+				scrub_begin_timeat_mov = ofMap(cur_frm, 0, vid.getFrameCount(), 0.0, mov_dur, true);;
+				if (b_use_sound)
+					sound.setPaused(true);
+				state = State::scrubbing;
+			}
+
+			auto fnum = ofClamp(_frame, 0, vid.getFrameCount());
+			auto scrub_timeat_mov = ofMap(fnum, 0, vid.getFrameCount(), 0.0, mov_dur, true);
+			auto diff_time = scrub_begin_timeat_mov - scrub_timeat_mov;
+
+			auto pausing_dur = cur_time - pausing_begin_time;
+
+			movie_finish_time += pausing_dur + diff_time * -1.0;
+
+			ofLog() << "scrub_begin_timeat_mov: " << scrub_begin_timeat_mov;
+			ofLog() << "scrub_timeat_mov: " << scrub_timeat_mov;
+			ofLog() << "diff_time: " << diff_time;
+
+			vid.setFrame(fnum);
+			vid.update();
+
+			feed_fbo();
 		}
 	}
 
@@ -382,10 +414,20 @@ protected:
 		return dur;
 	}
 
+	void feed_fbo()
+	{
+		fbo.begin();
+		ofClear(0);
+		extreme_gpu_video.begin();
+		extreme_gpu_video.getPlaceHolderTexture().draw(0, 0);
+		extreme_gpu_video.end();
+		fbo.end();
+	}
+
 	enum struct State { init, loaded, stop, paused, playing, scrubbing, done };
 	State state;
 	float speed;
-	float cur_time, movie_finish_time, pausing_begin_time;
+	float cur_time, movie_finish_time, pausing_begin_time, scrub_begin_timeat_mov;
 	int last_frm_num;
 	bool b_loop;
 	bool b_frame_new;

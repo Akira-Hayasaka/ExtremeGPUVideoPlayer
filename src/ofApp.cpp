@@ -28,7 +28,7 @@ void ofApp::keyPressed(int key)
 }
 void ofApp::mouseMoved(int x, int y) 
 {
-	//player->setVolume(ofMap(x, 0, ofGetWidth(), 0.1, 1.0));
+	player->setFrame(ofMap(x, 0, ofGetWidth(), 0, player->getTotalNumFrames()));
 }
 void ofApp::keyReleased(int key) {}
 void ofApp::mouseDragged(int x, int y, int button) {}
