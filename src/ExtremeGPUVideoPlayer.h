@@ -111,11 +111,6 @@ public:
 		}
 	}
 
-	void debug_draw()
-	{
-
-	}
-
 	bool isFrameNew()
 	{
 		return b_frame_new;
@@ -235,12 +230,13 @@ public:
 
 	ofPixels& getPixels()
 	{
-
+		fbo.readToPixels(px);
+		return px;
 	}
 
 	ofTexture& getTexture()
 	{
-
+		return fbo.getTexture();
 	}
 
 	float getDuration()
@@ -443,6 +439,7 @@ protected:
 
 	ofxExtremeGpuVideo extreme_gpu_video;
 	ofFbo fbo;
+	ofPixels px;
 
 	ofSoundPlayer sound;
 	bool b_use_sound;
