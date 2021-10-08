@@ -13,7 +13,8 @@ public:
 		movie_finish_time(ofGetElapsedTimef()),
 		speed(1.0), 
 		b_loop(true),
-		b_use_sound(false)
+		b_use_sound(false),
+		b_frame_new(false)
 	{}
 
 	~ExtremeGPUVideoPlayer() {}
@@ -51,7 +52,10 @@ public:
 
 	bool isInitialized()
 	{
-
+		if (state != State::init)
+			return true;
+		else
+			return false;
 	}
 
 	void update()
@@ -112,7 +116,7 @@ public:
 
 	bool isFrameNew()
 	{
-
+		return b_frame_new;
 	}
 
 	void play()
@@ -304,6 +308,11 @@ protected:
 		auto& vid = extreme_gpu_video;
 		int cur_frm_num = vid.getFrameAt();
 
+		if (cur_frm_num != last_frm_num)
+			b_frame_new = true;
+		else
+			b_frame_new = false;
+
 		if (cur_frm_num == vid.getFrameCount() - 1)
 		{
 			//ofLogNotice(__FUNCTION__) << id_str << " done " << type_str << " movie at " << ofToString(cur_frm_num) << ", elp:" << Globals::ELAPSED_TIME;
@@ -344,6 +353,7 @@ protected:
 	float movie_finish_time, pausing_begin_time;
 	int last_frm_num;
 	bool b_loop;
+	bool b_frame_new;
 
 	ofxExtremeGpuVideo extreme_gpu_video;
 	ofFbo fbo;
