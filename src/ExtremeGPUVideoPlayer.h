@@ -196,7 +196,10 @@ public:
 
 	bool isPlaying()
 	{
-
+		if (state == State::playing)
+			return true;
+		else
+			return false;
 	}
 
 	ofPixels& getPixels()
