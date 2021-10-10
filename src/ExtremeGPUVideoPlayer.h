@@ -21,12 +21,11 @@ public:
 	~ExtremeGPUVideoPlayer() {}
 
 	void load(
+		ofxExtremeGpuVideo::Mode _mode,
 		const std::filesystem::path _movie_path,
 		const std::filesystem::path _audio_path = "")
 	{
-		extreme_gpu_video.load(
-			_movie_path.string(),
-			ofxExtremeGpuVideo::GPU_VIDEO_STREAMING_FROM_STORAGE);
+		extreme_gpu_video.load(_movie_path.string(), _mode);
 		state = State::loaded;
 
 		fbo.allocate(getWidth(), getHeight());

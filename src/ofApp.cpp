@@ -3,7 +3,9 @@
 void ofApp::setup() 
 {
 	player = std::make_unique<ExtremeGPUVideoPlayer>();
-	player->load("visual_short.gv", "sound_short.mp3");
+	player->load(
+		ofxExtremeGpuVideo::GPU_VIDEO_STREAMING_FROM_CPU_MEMORY_DECOMPRESSED,
+		"visual_short.gv", "sound_short.mp3");
 	player->play();
 
 	ofSetWindowShape(player->getWidth(), player->getHeight());
