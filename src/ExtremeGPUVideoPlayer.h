@@ -137,6 +137,7 @@ public:
 				{
 					auto scrub_pct = ofMap(vid.getFrameAt(), 0, vid.getFrameCount(), 0.0, 1.0, true);
 					sound.setPaused(false);
+					sound.play();
 					sound.setPosition(scrub_pct);
 				}
 			}
